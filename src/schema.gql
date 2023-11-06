@@ -1,0 +1,301 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Transaction {
+  id: Int!
+  amount: Float!
+  description: String!
+  createdAt: DateTime!
+  walletFromId: ID!
+  walletFrom: Wallet!
+  walletToId: ID!
+  walletTo: Wallet!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type DniType {
+  id: Int!
+  name: String!
+  abbreviation: String!
+  documents: [Dni!]
+}
+
+type Dni {
+  id: ID!
+  number: Int!
+  expeditionDate: Date!
+  nationalityId: Int!
+  nationality: Country!
+  expeditionPlace: String!
+  expiresOn: Date
+  createdAt: DateTime!
+  typeId: Int!
+  birth: Date!
+  type: DniType!
+  statusId: Int!
+  status: Status!
+  userId: Int!
+  user: User!
+  wallets: [Wallet!]
+}
+
+"""Date custom scalar types"""
+scalar Date
+
+type Country {
+  id: Int!
+  name: String!
+  isoCodeMain: String!
+  isoCodeSecond: String!
+  code: String!
+  statusId: Int!
+  status: Status!
+  currencies: [Currency!]!
+  documents: [Dni!]!
+}
+
+type Currency {
+  id: Int!
+  name: String!
+  codIso: String!
+  statusId: Int!
+  status: Status!
+  wallets: [Wallet!]
+  countries: [Country!]
+}
+
+type WalletsType {
+  id: Int!
+  name: String!
+  wallets: [Wallet!]
+}
+
+type Wallet {
+  id: ID!
+  number: String!
+  securityCode: Int!
+  balance: Float!
+  expiresOn: DateTime!
+  createdAt: DateTime!
+  dniId: Int!
+  dni: Dni!
+  currencyId: Int!
+  currency: Currency!
+  statusId: Int!
+  status: Status!
+  typeId: Int!
+  type: WalletsType!
+  withdrawals: [Transaction!]
+  deposits: [Transaction!]
+}
+
+type Status {
+  id: Int!
+  name: String!
+  users: [User!]
+  wallets: [Wallet!]
+  documents: [Dni!]
+  currencies: [Currency!]
+  countries: [Country!]
+}
+
+type User {
+  id: Int!
+  firstName: String
+  secondName: String!
+  firstSurname: String!
+  secondSurname: String
+  email: String!
+  password: String!
+  phone: String!
+  countryCode: String!
+  createdAt: DateTime!
+  dniId: Int
+  dni: Dni
+  statusId: Int!
+  status: Status!
+  role: ValidRoles!
+}
+
+enum ValidRoles {
+  root
+  super
+  admin
+  user
+}
+
+type TransactionResponse {
+  Sender: Wallet!
+  Recipient: Wallet!
+  transaction: Transaction!
+}
+
+type Query {
+  users: [User!]!
+  user(id: Int!): User!
+  allStatus: [Status!]!
+  status(id: Int!): Status!
+  wallets: [Wallet!]!
+  wallet(id: Int!): Wallet!
+  documents: [Dni!]!
+  dni(id: Int!): Dni!
+  transactions: [Transaction!]!
+  transaction(id: Int!): Transaction!
+  currencies: [Currency!]!
+  currency(id: Int!): Currency!
+  walletsTypes: [WalletsType!]!
+  walletType(id: Int!): WalletsType!
+  dniTypes: [DniType!]!
+  dniType(id: Int!): DniType!
+  countries: [Country!]!
+  country(id: Int!): Country!
+}
+
+type Mutation {
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  deactivateUser(id: Int!): User!
+  blockUser(id: Int!): User!
+  createStatus(createStatusInput: CreateStatusInput!): Status!
+  updateStatus(updateStatusInput: UpdateStatusInput!): Status!
+  createWallet(createWalletInput: CreateWalletInput!): Wallet!
+  updateWallet(updateWalletInput: UpdateWalletInput!): Wallet!
+  rechargeWallet(id: Int!, amount: Float!): Wallet!
+  deactivateWallet(id: Int!): Wallet!
+  blockWallet(id: Int!): Wallet!
+  createDni(createDniInput: CreateDniInput!): Dni!
+  updateDni(updateDniInput: UpdateDniInput!): Dni!
+  deactivateDni(id: Int!): Dni!
+  blockDni(id: Int!): Dni!
+  createTransaction(createTransactionInput: CreateTransactionInput!): TransactionResponse!
+  createCurrency(createCurrencyInput: CreateCurrencyInput!): Currency!
+  updateCurrency(updateCurrencyInput: UpdateCurrencyInput!): Currency!
+  deactivateCurrency(id: Int!): Currency!
+  blockCurrency(id: Int!): Currency!
+  createWalletsType(createWalletsTypeInput: CreateWalletsTypeInput!): WalletsType!
+  updateWalletsType(updateWalletsTypeInput: UpdateWalletsTypeInput!): WalletsType!
+  createDniType(createDniTypeInput: CreateDniTypeInput!): DniType!
+  updateDniType(updateDniTypeInput: UpdateDniTypeInput!): DniType!
+  createCountry(createCountryInput: CreateCountryInput!): Country!
+  updateCountry(updateCountryInput: UpdateCountryInput!): Country!
+  deactivateCountry(id: Int!): Country!
+  blockCountry(id: Int!): Country!
+}
+
+input UpdateUserInput {
+  firstName: String
+  secondName: String
+  firstSurname: String
+  secondSurname: String
+  email: String
+  password: String!
+  phone: String
+  countryCode: String
+  id: Int!
+  newPassword: String
+}
+
+input CreateStatusInput {
+  name: String!
+}
+
+input UpdateStatusInput {
+  name: String
+  id: Int!
+  isActive: Boolean
+}
+
+input CreateWalletInput {
+  dniId: Int!
+  currencyId: Int!
+  typeId: Int!
+}
+
+input UpdateWalletInput {
+  dniId: Int
+  currencyId: Int
+  typeId: Int
+  id: Int!
+}
+
+input CreateDniInput {
+  userId: Int!
+  typeId: Int!
+  number: Int!
+  birth: Date!
+  expeditionDate: Date!
+  expeditionPlace: String!
+  expiresOn: Date
+  nationalityId: Int!
+}
+
+input UpdateDniInput {
+  userId: Int
+  typeId: Int
+  number: Int
+  birth: Date
+  expeditionDate: Date
+  expeditionPlace: String
+  expiresOn: Date
+  nationalityId: Int
+  id: Int!
+}
+
+input CreateTransactionInput {
+  amount: Float!
+  description: String!
+  walletFromId: Int!
+  walletToId: Int!
+}
+
+input CreateCurrencyInput {
+  name: String!
+  codIso: String!
+}
+
+input UpdateCurrencyInput {
+  name: String
+  codIso: String
+  id: Int!
+}
+
+input CreateWalletsTypeInput {
+  name: String!
+}
+
+input UpdateWalletsTypeInput {
+  name: String
+  id: Int!
+}
+
+input CreateDniTypeInput {
+  name: String!
+  abbreviation: String!
+}
+
+input UpdateDniTypeInput {
+  name: String
+  abbreviation: String
+  id: Int!
+}
+
+input CreateCountryInput {
+  name: String!
+  isoCodeMain: String!
+  isoCodeSecond: String!
+  code: String!
+  currenciesId: [Int!]!
+}
+
+input UpdateCountryInput {
+  name: String
+  isoCodeMain: String
+  isoCodeSecond: String
+  code: String
+  currenciesId: [Int!]
+  id: Int!
+}
