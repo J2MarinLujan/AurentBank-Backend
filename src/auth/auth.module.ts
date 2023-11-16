@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants/jwt.constants';
 import { JwtStrategy } from './strategies/jwt.Strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AdminsModule } from '../gql/admins/admins.module';
 
 @Module({
 	imports: [
@@ -14,10 +15,11 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 		JwtModule.registerAsync({
 			useFactory: () => ({
 				secret: jwtConstants.secret,
-				signOptions: { expiresIn: '1d' },
+				signOptions: { expiresIn: '8h' },
 			}),
 		}),
 		UsersModule,
+		AdminsModule,
 	],
 	controllers: [AuthController],
 	providers: [AuthService, JwtStrategy, JwtAuthGuard],

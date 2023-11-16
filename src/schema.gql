@@ -129,6 +129,19 @@ enum ValidRoles {
   user
 }
 
+type Admin {
+  id: Int!
+  username: String!
+  password: String!
+  firstName: String
+  secondName: String!
+  firstSurname: String!
+  secondSurname: String
+  statusId: Int!
+  status: Status!
+  role: ValidRoles!
+}
+
 type TransactionResponse {
   Sender: Wallet!
   Recipient: Wallet!
@@ -152,6 +165,8 @@ type Query {
   walletType(id: Int!): WalletsType!
   dniTypes: [DniType!]!
   dniType(id: Int!): DniType!
+  admins: [Admin!]!
+  admin(id: Int!): Admin!
   countries: [Country!]!
   country(id: Int!): Country!
 }
@@ -180,6 +195,9 @@ type Mutation {
   updateWalletsType(updateWalletsTypeInput: UpdateWalletsTypeInput!): WalletsType!
   createDniType(createDniTypeInput: CreateDniTypeInput!): DniType!
   updateDniType(updateDniTypeInput: UpdateDniTypeInput!): DniType!
+  updateAdmin(updateAdminInput: UpdateAdminInput!): Admin!
+  signupAdmin(id: Int!): Admin!
+  blockAdmin(id: Int!): Admin!
   createCountry(createCountryInput: CreateCountryInput!): Country!
   updateCountry(updateCountryInput: UpdateCountryInput!): Country!
   deactivateCountry(id: Int!): Country!
@@ -281,6 +299,18 @@ input UpdateDniTypeInput {
   name: String
   abbreviation: String
   id: Int!
+}
+
+input UpdateAdminInput {
+  firstName: String
+  secondName: String
+  firstSurname: String
+  secondSurname: String
+  username: String
+  password: String!
+  role: ValidRoles
+  id: Int!
+  newPassword: String
 }
 
 input CreateCountryInput {

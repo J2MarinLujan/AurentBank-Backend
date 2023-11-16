@@ -1,3 +1,3 @@
 export const jwtConstants = {
-	secret: 'iBankBackendPrototypeV1@',
+	secret: 'AurentBankBackendPrototypeV1@',
 };

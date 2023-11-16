@@ -1,19 +1,20 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupAuthDto } from './dto/signup-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { User } from '../gql/users/entities/user.entity';
-import { ValidRoles } from '../common/enums/valid-roles.enum';
 import { AuthResponse } from './types/auth-response.type';
-import { ActiveUser } from './decorators/active-user.decorator';
 import { UsersService } from '../gql/users/users.service';
+import { SignupAdminDto } from './dto/signup-admin.dto';
+import { AdminResponse } from './types/admin-response.type';
+import { AdminsService } from '../gql/admins/admins.service';
+import { LoginAdminDto } from './dto/login-admin.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private readonly authService: AuthService,
-		private readonly usersService: UsersService
+		private readonly usersService: UsersService,
+		private readonly adminsService: AdminsService
 	) {}
 
 	@Post('signup')
@@ -26,14 +27,27 @@ export class AuthController {
 		return await this.authService.signup(signupAuthDto);
 	}
 
+	@Post('signupAdmin')
+	async signupAdmin(
+		@Body() signupAdminDto: SignupAdminDto
+	): Promise<AdminResponse> {
+		const adminByUsername = await this.adminsService.findOneByUsername(
+			signupAdminDto.username
+		);
+		if (adminByUsername)
+			throw new Error(`Username: ${signupAdminDto.username}, already in use`);
+		return await this.authService.signupAdmin(signupAdminDto);
+	}
+
 	@Post('login')
 	async login(@Body() loginAuthDto: LoginAuthDto): Promise<AuthResponse> {
 		return await this.authService.login(loginAuthDto);
 	}
 
-	@Get('revalidate')
-	@UseGuards(JwtAuthGuard)
-	revalidate(@ActiveUser(ValidRoles.user) user: User): AuthResponse {
-		return this.authService.revalidate(user);
+	@Post('loginAdmin')
+	async loginAdmin(
+		@Body() loginAdminDto: LoginAdminDto
+	): Promise<AdminResponse> {
+		return await this.authService.loginAdmin(loginAdminDto);
 	}
 }
