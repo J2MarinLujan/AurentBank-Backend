@@ -19,6 +19,7 @@ import { JwtStrategy } from './auth/strategies/jwt.Strategy';
 import { dateScalar } from './scalars/date.scalar';
 import { CountriesModule } from './gql/countries/countries.module';
 import { DniModule } from './gql/dni/dni.module';
+import { AdminsModule } from './gql/admins/admins.module';
 
 @Module({
 	imports: [
@@ -51,6 +52,7 @@ import { DniModule } from './gql/dni/dni.module';
 		AuthModule,
 		DniModule,
 		CountriesModule,
+		AdminsModule,
 	],
 	controllers: [AppController],
 	providers: [AppService, JwtStrategy],
