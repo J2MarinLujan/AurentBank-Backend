@@ -5,10 +5,10 @@ import { CreateCountryInput } from './dto/create-country.input';
 import { UpdateCountryInput } from './dto/update-country.input';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
-import { User } from '../users/entities/user.entity';
 import { StatusService } from '../status/status.service';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => Country)
 @UseGuards(JwtAuthGuard)
@@ -20,7 +20,8 @@ export class CountriesResolver {
 
 	@Mutation(() => Country, { name: 'createCountry' })
 	async create(
-		@Args('createCountryInput') createCountryInput: CreateCountryInput
+		@Args('createCountryInput') createCountryInput: CreateCountryInput,
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Country> {
 		return await this.countriesService.create(createCountryInput);
 	}
@@ -33,7 +34,7 @@ export class CountriesResolver {
 	@Query(() => Country, { name: 'country' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<Country> {
 		return await this.countriesService.findOne(id);
 	}
@@ -41,7 +42,7 @@ export class CountriesResolver {
 	@Mutation(() => Country, { name: 'updateCountry' })
 	async update(
 		@Args('updateCountryInput') updateCountryInput: UpdateCountryInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Country> {
 		const country = await this.countriesService.findOne(updateCountryInput.id);
 		if (!country)
@@ -55,7 +56,7 @@ export class CountriesResolver {
 	@Mutation(() => Country, { name: 'deactivateCountry' })
 	async deactivate(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Country> {
 		const countryToDeactivate = await this.countriesService.findOne(id);
 		if (!countryToDeactivate)
@@ -70,7 +71,7 @@ export class CountriesResolver {
 	@Mutation(() => Country, { name: 'blockCountry' })
 	async block(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Country> {
 		const countryToBlock = await this.countriesService.findOne(id);
 		if (!countryToBlock) throw new Error(`Country with id: ${id}, not found`);

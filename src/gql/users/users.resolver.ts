@@ -3,10 +3,11 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UpdateUserInput } from './dto/update-user.input';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { StatusService } from '../status/status.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => User)
 @UseGuards(JwtAuthGuard)
@@ -17,7 +18,7 @@ export class UsersResolver {
 	) {}
 
 	@Query(() => [User], { name: 'users' })
-	async findAll(@CurrentUser(ValidRoles.admin) user: User): Promise<User[]> {
+	async findAll(@CurrentUser(ValidRoles.admin) admin: Admin): Promise<User[]> {
 		const usersList = await this.usersService.findAll();
 		return usersList.filter((user) => user.statusId !== 3);
 	}
@@ -25,7 +26,7 @@ export class UsersResolver {
 	@Query(() => User, { name: 'user' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.user) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<User> {
 		return await this.usersService.findOne(id);
 	}
@@ -33,7 +34,7 @@ export class UsersResolver {
 	@Mutation(() => User, { name: 'updateUser' })
 	async update(
 		@Args('updateUserInput') updateUserInput: UpdateUserInput,
-		@CurrentUser(ValidRoles.user) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<User> {
 		const userById = await this.usersService.findOne(updateUserInput.id);
 		if (!userById)
@@ -44,7 +45,7 @@ export class UsersResolver {
 	@Mutation(() => User, { name: 'deactivateUser' })
 	async deactivate(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<User> {
 		const userById = await this.usersService.findOne(id);
 		if (!userById) throw new Error(`User with id: ${id} not found`);
@@ -58,7 +59,7 @@ export class UsersResolver {
 	@Mutation(() => User, { name: 'blockUser' })
 	async block(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<User> {
 		const userById = await this.usersService.findOne(id);
 		if (!userById) throw new Error(`User with id: ${id} not found`);

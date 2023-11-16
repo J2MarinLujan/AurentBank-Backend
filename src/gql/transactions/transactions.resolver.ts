@@ -2,13 +2,13 @@ import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { TransactionsService } from './transactions.service';
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionInput } from './dto/create-transaction.input';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { User } from '../users/entities/user.entity';
 import { WalletsService } from '../wallets/wallets.service';
 import { TransactionResponse } from './types/transaction-response.type';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @Resolver(() => Transaction)
 @UseGuards(JwtAuthGuard)

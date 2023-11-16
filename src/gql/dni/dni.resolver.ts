@@ -4,12 +4,13 @@ import { Dni } from './entities/dni.entity';
 import { CreateDniInput } from './dto/create-dni.input';
 import { UpdateDniInput } from './dto/update-dni.input';
 import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { StatusService } from '../status/status.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => Dni)
 @UseGuards(JwtAuthGuard)
@@ -40,19 +41,23 @@ export class DniResolver {
 	}
 
 	@Query(() => [Dni], { name: 'documents' })
-	async findAll(@CurrentUser(ValidRoles.admin) user: User): Promise<Dni[]> {
+	async findAll(@CurrentUser(ValidRoles.admin) admin: Admin): Promise<Dni[]> {
 		const dniList = await this.dniService.findAll();
 		return dniList.filter((dni) => dni.statusId !== 3);
 	}
 
 	@Query(() => Dni, { name: 'dni' })
-	async findOne(@Args('id', { type: () => Int }) id: number): Promise<Dni> {
+	async findOne(
+		@Args('id', { type: () => Int }) id: number,
+		@CurrentUser(ValidRoles.admin) admin: Admin
+	): Promise<Dni> {
 		return await this.dniService.findOne(id);
 	}
 
 	@Mutation(() => Dni, { name: 'updateDni' })
 	async update(
-		@Args('updateDniInput') updateDniInput: UpdateDniInput
+		@Args('updateDniInput') updateDniInput: UpdateDniInput,
+		@CurrentUser(ValidRoles.user) user: User
 	): Promise<Dni> {
 		const dniById = await this.dniService.findOne(updateDniInput.id);
 		if (!dniById)
@@ -68,7 +73,10 @@ export class DniResolver {
 	}
 
 	@Mutation(() => Dni, { name: 'deactivateDni' })
-	async deactivate(@Args('id', { type: () => Int }) id: number): Promise<Dni> {
+	async deactivate(
+		@Args('id', { type: () => Int }) id: number,
+		@CurrentUser(ValidRoles.super) admin: Admin
+	): Promise<Dni> {
 		const dniToDeactivate = await this.dniService.findOne(id);
 		if (!dniToDeactivate) throw new Error(`Dni with id: ${id}, not found`);
 		const status = await this.statusService.findOne(2);
@@ -79,7 +87,10 @@ export class DniResolver {
 	}
 
 	@Mutation(() => Dni, { name: 'blockDni' })
-	async block(@Args('id', { type: () => Int }) id: number): Promise<Dni> {
+	async block(
+		@Args('id', { type: () => Int }) id: number,
+		@CurrentUser(ValidRoles.super) admin: Admin
+	): Promise<Dni> {
 		const dniToBlock = await this.dniService.findOne(id);
 		if (!dniToBlock) throw new Error(`DNI with id: ${id}, not found`);
 		const status = await this.statusService.findOne(3);

@@ -3,11 +3,12 @@ import { WalletsTypeService } from './wallets-type.service';
 import { WalletsType } from './entities/wallets-type.entity';
 import { CreateWalletsTypeInput } from './dto/create-wallets-type.input';
 import { UpdateWalletsTypeInput } from './dto/update-wallets-type.input';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../../common/enums/valid-roles.enum';
 import { User } from '../../users/entities/user.entity';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { Admin } from '../../admins/entities/admin.entity';
 
 @Resolver(() => WalletsType)
 @UseGuards(JwtAuthGuard)
@@ -18,7 +19,7 @@ export class WalletsTypeResolver {
 	async create(
 		@Args('createWalletsTypeInput')
 		createWalletsTypeInput: CreateWalletsTypeInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<WalletsType> {
 		const walletsTypeByName = await this.walletsTypeService.findOneByName(
 			createWalletsTypeInput.name
@@ -32,14 +33,16 @@ export class WalletsTypeResolver {
 	}
 
 	@Query(() => [WalletsType], { name: 'walletsTypes' })
-	async findAll(): Promise<WalletsType[]> {
+	async findAll(
+		@CurrentUser(ValidRoles.user) user: User
+	): Promise<WalletsType[]> {
 		return await this.walletsTypeService.findAll();
 	}
 
 	@Query(() => WalletsType, { name: 'walletType' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.user) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<WalletsType> {
 		return await this.walletsTypeService.findOne(id);
 	}
@@ -48,7 +51,7 @@ export class WalletsTypeResolver {
 	async update(
 		@Args('updateWalletsTypeInput')
 		updateWalletsTypeInput: UpdateWalletsTypeInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<WalletsType> {
 		const walletsTypeById = await this.walletsTypeService.findOne(
 			updateWalletsTypeInput.id

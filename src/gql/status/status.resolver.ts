@@ -3,11 +3,12 @@ import { StatusService } from './status.service';
 import { Status } from './entities/status.entity';
 import { CreateStatusInput } from './dto/create-status.input';
 import { UpdateStatusInput } from './dto/update-status.input';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { User } from '../users/entities/user.entity';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => Status)
 @UseGuards(JwtAuthGuard)
@@ -17,7 +18,7 @@ export class StatusResolver {
 	@Mutation(() => Status, { name: 'createStatus' })
 	async create(
 		@Args('createStatusInput') createStatusInput: CreateStatusInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Status> {
 		const status = await this.statusService.findOneByName(
 			createStatusInput.name
@@ -30,14 +31,14 @@ export class StatusResolver {
 	}
 
 	@Query(() => [Status], { name: 'allStatus' })
-	async findAll(@CurrentUser(ValidRoles.admin) user: User): Promise<Status[]> {
+	async findAll(@CurrentUser(ValidRoles.user) user: User): Promise<Status[]> {
 		return await this.statusService.findAll();
 	}
 
 	@Query(() => Status, { name: 'status' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<Status> {
 		return await this.statusService.findOne(id);
 	}
@@ -45,7 +46,7 @@ export class StatusResolver {
 	@Mutation(() => Status, { name: 'updateStatus' })
 	async update(
 		@Args('updateStatusInput') updateStatusInput: UpdateStatusInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Status> {
 		const statusById = await this.statusService.findOne(updateStatusInput.id);
 		if (!statusById)

@@ -3,11 +3,12 @@ import { DniTypeService } from './dni-type.service';
 import { DniType } from './entities/dni-type.entity';
 import { CreateDniTypeInput } from './dto/create-dni-type.input';
 import { UpdateDniTypeInput } from './dto/update-dni-type.input';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../../common/enums/valid-roles.enum';
 import { User } from '../../users/entities/user.entity';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { Admin } from '../../admins/entities/admin.entity';
 
 @Resolver(() => DniType)
 @UseGuards(JwtAuthGuard)
@@ -17,7 +18,7 @@ export class DniTypeResolver {
 	@Mutation(() => DniType, { name: 'createDniType' })
 	async create(
 		@Args('createDniTypeInput') createDniTypeInput: CreateDniTypeInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<DniType> {
 		const dniTypeByName = await this.dniTypeService.findOneByName(
 			createDniTypeInput.name
@@ -36,14 +37,14 @@ export class DniTypeResolver {
 	}
 
 	@Query(() => [DniType], { name: 'dniTypes' })
-	async findAll(): Promise<DniType[]> {
+	async findAll(@CurrentUser(ValidRoles.user) user: User): Promise<DniType[]> {
 		return await this.dniTypeService.findAll();
 	}
 
 	@Query(() => DniType, { name: 'dniType' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<DniType> {
 		return await this.dniTypeService.findOne(id);
 	}
@@ -51,7 +52,7 @@ export class DniTypeResolver {
 	@Mutation(() => DniType, { name: 'updateDniType' })
 	async update(
 		@Args('updateDniTypeInput') updateDniTypeInput: UpdateDniTypeInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<DniType> {
 		const dniTypeById = await this.dniTypeService.findOne(
 			updateDniTypeInput.id

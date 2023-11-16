@@ -15,9 +15,57 @@ export const CurrentUser = createParamDecorator(
 		if (!user) {
 			throw new InternalServerErrorException('No user inside the request');
 		}
-		if (role === undefined) return user;
-		if (user.role === ValidRoles.admin) return user;
-		if (role === user.role) return user;
-		throw new ForbiddenException('User need a valid role');
+
+		// switch (role) {
+		// 	case undefined:
+		// 		return user;
+		// 	case ValidRoles.user:
+		// 		if (
+		// 			user.role === ValidRoles.user ||
+		// 			user.role === ValidRoles.admin ||
+		// 			user.role === ValidRoles.super ||
+		// 			user.role === ValidRoles.root
+		// 		)
+		// 			return user;
+		// 		throw new ForbiddenException('User need a valid role');
+		// 	case ValidRoles.admin:
+		// 		if (
+		// 			user.role === ValidRoles.admin ||
+		// 			user.role === ValidRoles.super ||
+		// 			user.role === ValidRoles.root
+		// 		)
+		// 			return user;
+		// 		throw new ForbiddenException('You need to have a role admin');
+		// 	case ValidRoles.super:
+		// 		if (user.role === ValidRoles.super || user.role === ValidRoles.root)
+		// 			return user;
+		// 		throw new ForbiddenException('You need to have a role super');
+		//
+		// 	case ValidRoles.root:
+		// 		if (user.role === ValidRoles.root) return user;
+		// 		throw new ForbiddenException('You need to have a role root');
+		// 	default:
+		// 		throw new ForbiddenException('User need a valid role');
+		// }
+
+		const rolePermissions: Record<ValidRoles, ValidRoles[]> = {
+			[ValidRoles.root]: [ValidRoles.root],
+			[ValidRoles.super]: [ValidRoles.super, ValidRoles.root],
+			[ValidRoles.admin]: [ValidRoles.admin, ValidRoles.super, ValidRoles.root],
+			[ValidRoles.user]: [
+				ValidRoles.user,
+				ValidRoles.admin,
+				ValidRoles.super,
+				ValidRoles.root,
+			],
+		};
+
+		const allowedRoles = rolePermissions[role];
+
+		if (!allowedRoles || !allowedRoles.includes(user.role)) {
+			throw new ForbiddenException('User needs a valid role');
+		}
+
+		return user;
 	}
 );

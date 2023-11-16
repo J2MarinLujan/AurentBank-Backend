@@ -10,6 +10,7 @@ import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { User } from '../users/entities/user.entity';
 import { StatusService } from '../status/status.service';
 import { DniService } from '../dni/dni.service';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => Wallet)
 @UseGuards(JwtAuthGuard)
@@ -33,23 +34,26 @@ export class WalletsResolver {
 
 	@Query(() => [Wallet], { name: 'wallets' })
 	async findAll(@CurrentUser(ValidRoles.admin) user: User): Promise<Wallet[]> {
-		return await this.walletsService.findAll();
+		const walletsList = await this.walletsService.findAll();
+		return walletsList.filter((wallet) => wallet.statusId !== 3);
 	}
 
 	@Query(() => Wallet, { name: 'wallet' })
-	async findOne(@Args('id', { type: () => Int }) id: number): Promise<Wallet> {
+	async findOne(
+		@Args('id', { type: () => Int }) id: number,
+		@CurrentUser(ValidRoles.user) user: User
+	): Promise<Wallet> {
 		return await this.walletsService.findOne(id);
 	}
 
 	@Mutation(() => Wallet, { name: 'updateWallet' })
 	async update(
 		@Args('updateWalletInput') updateWalletInput: UpdateWalletInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Wallet> {
 		const walletById = await this.walletsService.findOne(updateWalletInput.id);
 		if (!walletById)
 			throw new Error(`Wallet with id: ${updateWalletInput.id} not found`);
-
 		return await this.walletsService.update(
 			updateWalletInput.id,
 			updateWalletInput
@@ -60,7 +64,7 @@ export class WalletsResolver {
 	async recharge(
 		@Args('id', { type: () => Int }) id: number,
 		@Args('amount', { type: () => Float }) amount: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Wallet> {
 		const walletById = await this.walletsService.findOne(id);
 		if (!walletById) throw new Error(`Wallet with id: ${id} not found`);
@@ -71,7 +75,7 @@ export class WalletsResolver {
 	@Mutation(() => Wallet, { name: 'deactivateWallet' })
 	async deactivate(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Wallet> {
 		const walletById = await this.walletsService.findOne(id);
 		if (!walletById) throw new Error(`Wallet with id: ${id} not found`);
@@ -85,7 +89,7 @@ export class WalletsResolver {
 	@Mutation(() => Wallet, { name: 'blockWallet' })
 	async block(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Wallet> {
 		const walletById = await this.walletsService.findOne(id);
 		if (!walletById) throw new Error(`Wallet with id: ${id} not found`);

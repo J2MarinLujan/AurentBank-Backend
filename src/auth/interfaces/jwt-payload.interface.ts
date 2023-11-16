@@ -1,6 +1,8 @@
+import { ValidRoles } from '../../common/enums/valid-roles.enum';
+
 export interface JwtPayloadInterface {
 	id: number;
-	dniId: number;
+	role: ValidRoles;
 	iat: number;
 	exp: number;
 }

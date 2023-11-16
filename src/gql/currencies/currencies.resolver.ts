@@ -3,12 +3,13 @@ import { CurrenciesService } from './currencies.service';
 import { Currency } from './entities/currency.entity';
 import { CreateCurrencyInput } from './dto/create-currency.input';
 import { UpdateCurrencyInput } from './dto/update-currency.input';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ValidRoles } from '../../common/enums/valid-roles.enum';
 import { User } from '../users/entities/user.entity';
 import { StatusService } from '../status/status.service';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Resolver(() => Currency)
 @UseGuards(JwtAuthGuard)
@@ -21,7 +22,7 @@ export class CurrenciesResolver {
 	@Mutation(() => Currency, { name: 'createCurrency' })
 	async create(
 		@Args('createCurrencyInput') createCurrencyInput: CreateCurrencyInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<Currency> {
 		const currency = await this.currenciesService.findOneByName(
 			createCurrencyInput.name
@@ -41,7 +42,7 @@ export class CurrenciesResolver {
 	@Query(() => Currency, { name: 'currency' })
 	async findOne(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.admin) admin: Admin
 	): Promise<Currency> {
 		const currency = await this.currenciesService.findOne(id);
 		if (!currency) throw new Error(`Currency with id: ${id}, not found`);
@@ -51,7 +52,7 @@ export class CurrenciesResolver {
 	@Mutation(() => Currency, { name: 'updateCurrency' })
 	async update(
 		@Args('updateCurrencyInput') updateCurrencyInput: UpdateCurrencyInput,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Currency> {
 		const currency = await this.currenciesService.findOne(
 			updateCurrencyInput.id
@@ -74,7 +75,7 @@ export class CurrenciesResolver {
 	@Mutation(() => Currency, { name: 'deactivateCurrency' })
 	async deactivate(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Currency> {
 		const currencyToDeactivate = await this.currenciesService.findOne(id);
 		if (!currencyToDeactivate)
@@ -89,7 +90,7 @@ export class CurrenciesResolver {
 	@Mutation(() => Currency, { name: 'blockCurrency' })
 	async block(
 		@Args('id', { type: () => Int }) id: number,
-		@CurrentUser(ValidRoles.admin) user: User
+		@CurrentUser(ValidRoles.super) admin: Admin
 	): Promise<Currency> {
 		const currencyToBlock = await this.currenciesService.findOne(id);
 		if (!currencyToBlock) throw new Error(`Currency with id: ${id}, not found`);
